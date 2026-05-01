@@ -10,15 +10,17 @@ import java.util.Locale;
 final class OreToggleCommands {
     private final OreDefinitions definitions;
     private final OreStateManager stateManager;
+    private final ReplacedOreTracker replacedOreTracker;
 
-    OreToggleCommands(OreDefinitions definitions, OreStateManager stateManager) {
+    OreToggleCommands(OreDefinitions definitions, OreStateManager stateManager, ReplacedOreTracker replacedOreTracker) {
         this.definitions = definitions;
         this.stateManager = stateManager;
+        this.replacedOreTracker = replacedOreTracker;
     }
 
     void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-                dispatcher.register(CommandManager.literal("toggleore")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("toggleore")
                         .then(CommandManager.argument("ore", StringArgumentType.word())
                                 .suggests((context, builder) -> {
                                     definitions.keys().forEach(builder::suggest);
@@ -58,8 +60,38 @@ final class OreToggleCommands {
                                                     true
                                             );
                                             return 1;
-                                        }))))
-        );
+                                        })))
+            );
+
+            dispatcher.register(CommandManager.literal("restoreore")
+                    .then(CommandManager.argument("ore", StringArgumentType.word())
+                            .suggests((context, builder) -> {
+                                definitions.keys().forEach(builder::suggest);
+                                return builder.buildFuture();
+                            })
+                            .executes(context -> {
+                                String oreKey = StringArgumentType.getString(context, "ore").toLowerCase(Locale.ROOT);
+                                OreDefinition definition = definitions.get(oreKey);
+
+                                if (definition == null) {
+                                    context.getSource().sendFeedback(
+                                            () -> Text.literal("Unknown ore. Available: " + String.join(", ", definitions.keys())),
+                                            false
+                                    );
+                                    return 0;
+                                }
+
+                                RestoreResult result = replacedOreTracker.restore(definition.key(), context.getSource().getServer());
+                                context.getSource().sendFeedback(
+                                        () -> Text.literal("Restore for " + definition.displayName()
+                                                + ": restored " + result.restored()
+                                                + ", skipped " + result.skipped() + "."),
+                                        true
+                                );
+                                return result.restored();
+                            }))
+            );
+        });
     }
 
     private String messageFor(OreDefinition definition, boolean disabled) {

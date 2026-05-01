@@ -171,9 +171,10 @@ final class OreScanPrototype {
 
             String worldKey = world.getRegistryKey().getValue().toString();
             BlockPos pos = new BlockPos(x, y, z);
-            if (replacedOreTracker.remember(definition.key(), worldKey, pos, state)) {
-                Block replacement = replacementFor(block);
-                world.setBlockState(pos, replacement.getDefaultState());
+            Block replacement = replacementFor(block);
+            BlockState replacementState = replacement.getDefaultState();
+            if (replacedOreTracker.remember(definition.key(), worldKey, pos, state, replacementState)) {
+                world.setBlockState(pos, replacementState);
                 System.out.println("[OreToggle] Replaced disabled " + definition.displayName()
                         + " at " + x + " " + y + " " + z + " in " + worldKey
                         + " with " + replacement.getName().getString() + ".");

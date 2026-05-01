@@ -9,7 +9,7 @@ public class OreToggleFabric implements ModInitializer {
 		OreStateManager stateManager = new OreStateManager();
 		ReplacedOreTracker replacedOreTracker = new ReplacedOreTracker();
 
-		new OreToggleCommands(definitions, stateManager).register();
+		new OreToggleCommands(definitions, stateManager, replacedOreTracker).register();
 		new OreScanPrototype(definitions, stateManager, replacedOreTracker).register();
 		System.out.println("OreToggle Fabric loaded");
 	}
