@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 final class ReplacedOreTracker {
@@ -20,6 +21,17 @@ final class ReplacedOreTracker {
         String key = key(worldKey, pos);
         replacedBlocks.put(key, new ReplacedOreBlock(oreKey, worldKey, pos, originalState, replacementState));
         return true;
+    }
+
+    void load(List<ReplacedOreBlock> blocks) {
+        replacedBlocks.clear();
+        for (ReplacedOreBlock block : blocks) {
+            replacedBlocks.put(key(block.worldKey(), block.pos()), block);
+        }
+    }
+
+    List<ReplacedOreBlock> snapshot() {
+        return List.copyOf(replacedBlocks.values());
     }
 
     RestoreResult restore(String oreKey, MinecraftServer server) {

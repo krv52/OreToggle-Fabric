@@ -11,11 +11,18 @@ final class OreToggleCommands {
     private final OreDefinitions definitions;
     private final OreStateManager stateManager;
     private final ReplacedOreTracker replacedOreTracker;
+    private final OreStorage storage;
 
-    OreToggleCommands(OreDefinitions definitions, OreStateManager stateManager, ReplacedOreTracker replacedOreTracker) {
+    OreToggleCommands(
+            OreDefinitions definitions,
+            OreStateManager stateManager,
+            ReplacedOreTracker replacedOreTracker,
+            OreStorage storage
+    ) {
         this.definitions = definitions;
         this.stateManager = stateManager;
         this.replacedOreTracker = replacedOreTracker;
+        this.storage = storage;
     }
 
     void register() {
@@ -89,6 +96,18 @@ final class OreToggleCommands {
                                         true
                                 );
                                 return result.restored();
+                            }))
+            );
+
+            dispatcher.register(CommandManager.literal("oretoggle")
+                    .then(CommandManager.literal("save")
+                            .executes(context -> {
+                                storage.save(replacedOreTracker.snapshot());
+                                context.getSource().sendFeedback(
+                                        () -> Text.literal("OreToggle replaced block data saved."),
+                                        true
+                                );
+                                return 1;
                             }))
             );
         });
