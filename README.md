@@ -1,7 +1,8 @@
 # OreToggle Fabric
 
 Server-side Fabric mod for dynamically controlling ore availability.
-
+Control ore availability on your server in real-time.
+Disable ores, replace them automatically, and restore them later.
 Originally based on my Paper/Spigot plugin, now fully rewritten for Fabric.
 
 ---
@@ -14,7 +15,7 @@ Originally based on my Paper/Spigot plugin, now fully rewritten for Fabric.
 - Automatic ore replacement near players
 - Restore replaced ores:
   `/restoreore <ore>`
-- JSON persistence (survives restart)
+- Persistent storage (survives restart)
 - Autosave system
 - Status command:
   `/oretoggle status`
@@ -91,7 +92,7 @@ Default values:
 - Server-side only (clients do NOT need the mod)
 - No mixins used
 - Designed for SMP / server use
-- Behavior may differ from older versions (scanner rewritten)
+- Scanner system was fully rewritten in 2.0.0
 
 ---
 
