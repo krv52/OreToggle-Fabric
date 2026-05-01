@@ -1,43 +1,99 @@
 # OreToggle Fabric
 
-Fabric mod version of my original Paper/Spigot plugin.
+Server-side Fabric mod for dynamically controlling ore availability.
+
+Originally based on my Paper/Spigot plugin, now fully rewritten for Fabric.
+
+---
 
 ## Features
-- Toggle ores on/off:  
+
+- Toggle ores on/off:
   `/toggleore <ore> on/off`
-- Automatic ore replacement near player
-- Restore ores:  
+- Fast distance-based ore scanning (closest blocks first)
+- Automatic ore replacement near players
+- Restore replaced ores:
   `/restoreore <ore>`
 - JSON persistence (survives restart)
-- Autosave
-- Status command:  
+- Autosave system
+- Status command:
   `/oretoggle status`
+- Configurable performance and behavior
+
+---
 
 ## How it works
+
 When an ore is disabled, nearby matching blocks are replaced with:
+
 - Stone (overworld)
 - Deepslate (deepslate ores)
-- Netherrack (nether ores / debris)
+- Netherrack (nether ores / ancient debris)
 
-Replaced blocks are stored and can be restored later.
+Replaced blocks are tracked and can be restored later.
+
+The scanner prioritizes blocks closest to the player and updates dynamically as the player moves.
+
+---
 
 ## Commands
 
 ### Toggle ore
+
 `/toggleore <ore> on/off`
+
+
+### Restore ore
+
 `/restoreore <ore>`
 
+
 ### Status
+
 `/oretoggle status`
 
+
 ### Manual save
+
 `/oretoggle save`
 
+---
+
+## Config
+
+Config file:
+
+`config/oretoggle-config.json`
+
+
+Default values:
+```json
+{
+  "blocksPerTick": 2048,
+  "scanRadiusChunks": 2,
+  "autosaveSeconds": 60,
+  "maxTrackedBlocks": 0
+}
+```
+- blocksPerTick – how many blocks are scanned per tick
+- scanRadiusChunks – scan radius around player
+- autosaveSeconds – autosave interval
+- maxTrackedBlocks – limit for stored blocks (0 = unlimited)
+
+---
+
+## Requirements
+- Minecraft 1.21.11
+- Fabric Loader
+- Fabric API
+---
 ## Notes
-- Works on Fabric 1.21.x
+- Server-side only (clients do NOT need the mod)
 - No mixins used
-- Designed for SMP / servers
-- Rewritten from paper plugin to Fabric
+- Designed for SMP / server use
+- Behavior may differ from older versions (scanner rewritten)
+
+---
 
 ## License
 MIT
