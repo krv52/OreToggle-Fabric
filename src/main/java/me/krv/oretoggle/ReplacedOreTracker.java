@@ -18,8 +18,12 @@ final class ReplacedOreTracker {
     private final Map<String, ReplacedOreBlock> replacedBlocks = new HashMap<>();
     private boolean dirty;
 
-    boolean remember(String oreKey, String worldKey, BlockPos pos, BlockState originalState, BlockState replacementState) {
+    boolean remember(String oreKey, String worldKey, BlockPos pos, BlockState originalState, BlockState replacementState, int maxTrackedBlocks) {
         String key = key(worldKey, pos);
+        if (maxTrackedBlocks > 0 && replacedBlocks.size() >= maxTrackedBlocks && !replacedBlocks.containsKey(key)) {
+            return false;
+        }
+
         replacedBlocks.put(key, new ReplacedOreBlock(oreKey, worldKey, pos, originalState, replacementState));
         dirty = true;
         return true;
