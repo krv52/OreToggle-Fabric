@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,10 +52,10 @@ final class ReplacedOreTracker {
     RestoreResult restore(String oreKey, MinecraftServer server) {
         int restored = 0;
         int skipped = 0;
-        Iterator<Map.Entry<String, ReplacedOreBlock>> iterator = replacedBlocks.entrySet().iterator();
+        List<String> entriesToRemove = new ArrayList<>();
 
-        while (iterator.hasNext()) {
-            ReplacedOreBlock replacedBlock = iterator.next().getValue();
+        for (Map.Entry<String, ReplacedOreBlock> entry : replacedBlocks.entrySet()) {
+            ReplacedOreBlock replacedBlock = entry.getValue();
             if (!replacedBlock.oreKey().equals(oreKey)) {
                 continue;
             }
@@ -68,18 +68,25 @@ final class ReplacedOreTracker {
 
             BlockState currentState = world.getBlockState(replacedBlock.pos());
             if (!currentState.equals(replacedBlock.replacementState())) {
+                entriesToRemove.add(entry.getKey());
                 skipped++;
                 continue;
             }
 
             world.setBlockState(replacedBlock.pos(), replacedBlock.originalState());
-            iterator.remove();
-            dirty = true;
+            entriesToRemove.add(entry.getKey());
             restored++;
             System.out.println("[OreToggle] Restored " + oreKey + " at "
                     + replacedBlock.pos().getX() + " "
                     + replacedBlock.pos().getY() + " "
                     + replacedBlock.pos().getZ() + " in " + replacedBlock.worldKey() + ".");
+        }
+
+        if (!entriesToRemove.isEmpty()) {
+            for (String key : entriesToRemove) {
+                replacedBlocks.remove(key);
+            }
+            dirty = true;
         }
 
         return new RestoreResult(restored, skipped);

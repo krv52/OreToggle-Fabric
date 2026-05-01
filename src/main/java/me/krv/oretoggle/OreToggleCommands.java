@@ -135,8 +135,8 @@ final class OreToggleCommands {
 
     private String messageFor(OreDefinition definition, boolean disabled) {
         if (disabled) {
-            return definition.displayName() + " is now disabled in memory. Block scanning is not migrated yet.";
+            return definition.displayName() + " is now disabled. Nearby matching ores will be replaced.";
         }
-        return definition.displayName() + " is now enabled in memory.";
+        return definition.displayName() + " is now enabled. Existing replaced blocks can be restored with /restoreore " + definition.key() + ".";
     }
 }
