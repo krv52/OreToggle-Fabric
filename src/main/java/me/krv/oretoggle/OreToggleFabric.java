@@ -18,7 +18,11 @@ public class OreToggleFabric implements ModInitializer {
 		replacedOreTracker.load(storage.load());
 		new OreToggleCommands(definitions, stateManager, replacedOreTracker, storage).register();
 		new OreScanPrototype(definitions, stateManager, replacedOreTracker).register();
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> storage.save(replacedOreTracker.snapshot()));
+		new OreAutosave(replacedOreTracker, storage).register();
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+			storage.save(replacedOreTracker.snapshot());
+			replacedOreTracker.markSaved();
+		});
 		System.out.println("OreToggle Fabric loaded");
 	}
 }

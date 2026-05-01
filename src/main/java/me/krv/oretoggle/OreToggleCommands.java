@@ -103,14 +103,34 @@ final class OreToggleCommands {
                     .then(CommandManager.literal("save")
                             .executes(context -> {
                                 storage.save(replacedOreTracker.snapshot());
+                                replacedOreTracker.markSaved();
                                 context.getSource().sendFeedback(
                                         () -> Text.literal("OreToggle replaced block data saved."),
                                         true
                                 );
                                 return 1;
                             }))
+                    .then(CommandManager.literal("status")
+                            .executes(context -> {
+                                context.getSource().sendFeedback(
+                                        () -> Text.literal(disabledOresMessage()),
+                                        false
+                                );
+                                context.getSource().sendFeedback(
+                                        () -> Text.literal("Tracked blocks: " + replacedOreTracker.size()),
+                                        false
+                                );
+                                return 1;
+                            }))
             );
         });
+    }
+
+    private String disabledOresMessage() {
+        if (!stateManager.hasDisabledOres()) {
+            return "Disabled ores: none";
+        }
+        return "Disabled ores: " + String.join(", ", stateManager.disabledOreKeys());
     }
 
     private String messageFor(OreDefinition definition, boolean disabled) {

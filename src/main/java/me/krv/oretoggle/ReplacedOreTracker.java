@@ -16,10 +16,12 @@ import java.util.Map;
 
 final class ReplacedOreTracker {
     private final Map<String, ReplacedOreBlock> replacedBlocks = new HashMap<>();
+    private boolean dirty;
 
     boolean remember(String oreKey, String worldKey, BlockPos pos, BlockState originalState, BlockState replacementState) {
         String key = key(worldKey, pos);
         replacedBlocks.put(key, new ReplacedOreBlock(oreKey, worldKey, pos, originalState, replacementState));
+        dirty = true;
         return true;
     }
 
@@ -28,10 +30,23 @@ final class ReplacedOreTracker {
         for (ReplacedOreBlock block : blocks) {
             replacedBlocks.put(key(block.worldKey(), block.pos()), block);
         }
+        dirty = false;
     }
 
     List<ReplacedOreBlock> snapshot() {
         return List.copyOf(replacedBlocks.values());
+    }
+
+    int size() {
+        return replacedBlocks.size();
+    }
+
+    boolean isDirty() {
+        return dirty;
+    }
+
+    void markSaved() {
+        dirty = false;
     }
 
     RestoreResult restore(String oreKey, MinecraftServer server) {
@@ -59,6 +74,7 @@ final class ReplacedOreTracker {
 
             world.setBlockState(replacedBlock.pos(), replacedBlock.originalState());
             iterator.remove();
+            dirty = true;
             restored++;
             System.out.println("[OreToggle] Restored " + oreKey + " at "
                     + replacedBlock.pos().getX() + " "

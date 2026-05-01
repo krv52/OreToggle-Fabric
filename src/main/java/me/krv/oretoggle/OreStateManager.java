@@ -1,6 +1,7 @@
 package me.krv.oretoggle;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 final class OreStateManager {
@@ -26,6 +27,10 @@ final class OreStateManager {
 
     boolean hasDisabledOres() {
         return !disabledOreKeys.isEmpty();
+    }
+
+    List<String> disabledOreKeys() {
+        return disabledOreKeys.stream().sorted().toList();
     }
 
     int version() {
