@@ -37,7 +37,7 @@ final class OreScanPrototype {
         this.stateManager = stateManager;
         this.replacedOreTracker = replacedOreTracker;
         this.config = config;
-        this.scanOffsets = createScanOffsets(config.scanRadiusChunks());
+        this.scanOffsets = createScanOffsets(config.horizontalScanRadius(), config.verticalScanRadius());
     }
 
     void register() {
@@ -110,13 +110,12 @@ final class OreScanPrototype {
         }
     }
 
-    private static List<RelativeBlockOffset> createScanOffsets(int scanRadiusChunks) {
-        int radius = scanRadiusChunks * 16;
+    private static List<RelativeBlockOffset> createScanOffsets(int horizontalRadius, int verticalScanRadius) {
         List<RelativeBlockOffset> offsets = new ArrayList<>();
 
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
+        for (int x = -horizontalRadius; x <= horizontalRadius; x++) {
+            for (int y = -verticalScanRadius; y <= verticalScanRadius; y++) {
+                for (int z = -horizontalRadius; z <= horizontalRadius; z++) {
                     offsets.add(new RelativeBlockOffset(x, y, z, square(x) + square(y) + square(z)));
                 }
             }

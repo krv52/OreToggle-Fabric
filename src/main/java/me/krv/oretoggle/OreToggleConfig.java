@@ -12,10 +12,12 @@ import java.nio.file.Path;
 final class OreToggleConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private int blocksPerTick = 2048;
-    private int scanRadiusChunks = 2;
+    private int blocksPerTick = 512;
+    private int horizontalScanRadius = 64;
+    private int verticalScanRadius = 32;
     private int autosaveSeconds = 60;
     private int maxTrackedBlocks = 0;
+    private Integer scanRadiusChunks;
 
     static OreToggleConfig load(Path path) {
         if (!Files.exists(path)) {
@@ -30,6 +32,7 @@ final class OreToggleConfig {
                 config = new OreToggleConfig();
             }
             config.clampValues();
+            config.save(path);
             return config;
         } catch (IOException exception) {
             System.out.println("[OreToggle] Failed to load config, using defaults: " + exception.getMessage());
@@ -41,8 +44,12 @@ final class OreToggleConfig {
         return blocksPerTick;
     }
 
-    int scanRadiusChunks() {
-        return scanRadiusChunks;
+    int horizontalScanRadius() {
+        return horizontalScanRadius;
+    }
+
+    int verticalScanRadius() {
+        return verticalScanRadius;
     }
 
     int autosaveSeconds() {
@@ -69,9 +76,19 @@ final class OreToggleConfig {
     }
 
     private void clampValues() {
+        if (horizontalScanRadius <= 0 && scanRadiusChunks != null) {
+            horizontalScanRadius = Math.max(0, scanRadiusChunks) * 16;
+        }
+        if (horizontalScanRadius <= 0) {
+            horizontalScanRadius = 48;
+        }
+
         blocksPerTick = Math.max(1, blocksPerTick);
-        scanRadiusChunks = Math.max(0, scanRadiusChunks);
+        if (verticalScanRadius <= 0) {
+            verticalScanRadius = 64;
+        }
         autosaveSeconds = Math.max(1, autosaveSeconds);
         maxTrackedBlocks = Math.max(0, maxTrackedBlocks);
+        scanRadiusChunks = null;
     }
 }
