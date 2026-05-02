@@ -11,7 +11,10 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 final class OreScanPrototype {
     private final OreDefinitions definitions;
@@ -19,13 +22,8 @@ final class OreScanPrototype {
     private final ReplacedOreTracker replacedOreTracker;
     private final OreToggleConfig config;
     private final List<RelativeBlockOffset> scanOffsets;
+    private final Map<UUID, PlayerScanCursor> playerCursors = new HashMap<>();
     private final BlockPos.Mutable scanPos = new BlockPos.Mutable();
-    private int offsetIndex;
-    private int lastSeenStateVersion = -1;
-    private String lastWorldKey = "";
-    private int lastPlayerX;
-    private int lastPlayerY;
-    private int lastPlayerZ;
 
     OreScanPrototype(
             OreDefinitions definitions,
@@ -41,63 +39,54 @@ final class OreScanPrototype {
     }
 
     void register() {
-        ServerTickEvents.END_SERVER_TICK.register(this::scanNearOnePlayer);
+        ServerTickEvents.END_SERVER_TICK.register(this::scanNearPlayers);
     }
 
-    private void scanNearOnePlayer(MinecraftServer server) {
+    private void scanNearPlayers(MinecraftServer server) {
         if (!stateManager.hasDisabledOres()) {
             return;
         }
 
-        ServerPlayerEntity player = firstPlayer(server);
-        if (player == null) {
-            return;
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            ServerWorld world = player.getEntityWorld();
+            PlayerScanCursor cursor = playerCursors.computeIfAbsent(player.getUuid(), uuid -> new PlayerScanCursor());
+            resetCursorIfScanOriginChanged(cursor, world, player);
+            scanSomeBlocks(cursor, world, player);
         }
-
-        ServerWorld world = player.getEntityWorld();
-        resetCursorIfScanOriginChanged(world, player);
-        scanSomeBlocks(world, player);
     }
 
-    private ServerPlayerEntity firstPlayer(MinecraftServer server) {
-        if (server.getPlayerManager().getPlayerList().isEmpty()) {
-            return null;
-        }
-        return server.getPlayerManager().getPlayerList().getFirst();
-    }
-
-    private void resetCursorIfScanOriginChanged(ServerWorld world, ServerPlayerEntity player) {
+    private void resetCursorIfScanOriginChanged(PlayerScanCursor cursor, ServerWorld world, ServerPlayerEntity player) {
         String worldKey = world.getRegistryKey().getValue().toString();
-        boolean stateChanged = lastSeenStateVersion != stateManager.version();
-        boolean worldChanged = !lastWorldKey.equals(worldKey);
-        boolean playerMoved = lastPlayerX != player.getBlockX()
-                || lastPlayerY != player.getBlockY()
-                || lastPlayerZ != player.getBlockZ();
+        boolean stateChanged = cursor.lastSeenStateVersion != stateManager.version();
+        boolean worldChanged = !cursor.lastWorldKey.equals(worldKey);
+        boolean playerMoved = cursor.lastPlayerX != player.getBlockX()
+                || cursor.lastPlayerY != player.getBlockY()
+                || cursor.lastPlayerZ != player.getBlockZ();
 
         if (stateChanged || worldChanged || playerMoved) {
-            offsetIndex = 0;
-            lastSeenStateVersion = stateManager.version();
-            lastWorldKey = worldKey;
-            lastPlayerX = player.getBlockX();
-            lastPlayerY = player.getBlockY();
-            lastPlayerZ = player.getBlockZ();
+            cursor.offsetIndex = 0;
+            cursor.lastSeenStateVersion = stateManager.version();
+            cursor.lastWorldKey = worldKey;
+            cursor.lastPlayerX = player.getBlockX();
+            cursor.lastPlayerY = player.getBlockY();
+            cursor.lastPlayerZ = player.getBlockZ();
         }
     }
 
-    private void scanSomeBlocks(ServerWorld world, ServerPlayerEntity player) {
+    private void scanSomeBlocks(PlayerScanCursor cursor, ServerWorld world, ServerPlayerEntity player) {
         int minY = world.getBottomY();
         int topY = minY + world.getHeight() - 1;
         int playerY = Math.clamp(player.getBlockY(), minY, topY);
 
         for (int checked = 0; checked < config.blocksPerTick(); checked++) {
-            RelativeBlockOffset offset = scanOffsets.get(offsetIndex);
+            RelativeBlockOffset offset = scanOffsets.get(cursor.offsetIndex);
             int blockX = player.getBlockX() + offset.x();
             int blockY = Math.clamp(playerY + offset.y(), minY, topY);
             int blockZ = player.getBlockZ() + offset.z();
 
-            offsetIndex++;
-            if (offsetIndex >= scanOffsets.size()) {
-                offsetIndex = 0;
+            cursor.offsetIndex++;
+            if (cursor.offsetIndex >= scanOffsets.size()) {
+                cursor.offsetIndex = 0;
             }
 
             if (!world.isChunkLoaded(blockX >> 4, blockZ >> 4)) {
