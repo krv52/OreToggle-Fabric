@@ -3,7 +3,7 @@
 	"id": "oretoggle-fabric",
 	"version": "${version}",
 	"name": "OreToggle Fabric",
-	"description": "Server-side ore availability control for Fabric servers. Disabled ores are replaced near players and can be restored later.",
+	"description": "Server-side Fabric mod for disabling ores near players by replacing matching ore blocks and restoring tracked replacements later.",
 	"authors": [
 		"krv52"
 	],
