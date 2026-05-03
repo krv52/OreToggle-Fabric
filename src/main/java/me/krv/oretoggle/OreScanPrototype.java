@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 final class OreScanPrototype {
@@ -24,6 +25,7 @@ final class OreScanPrototype {
     private final List<RelativeBlockOffset> scanOffsets;
     private final Map<UUID, PlayerScanCursor> playerCursors = new HashMap<>();
     private final BlockPos.Mutable scanPos = new BlockPos.Mutable();
+    private int cursorCleanupTicks;
 
     OreScanPrototype(
             OreDefinitions definitions,
@@ -43,6 +45,8 @@ final class OreScanPrototype {
     }
 
     private void scanNearPlayers(MinecraftServer server) {
+        cleanupOfflinePlayerCursors(server);
+
         if (!stateManager.hasDisabledOres()) {
             return;
         }
@@ -53,6 +57,19 @@ final class OreScanPrototype {
             resetCursorIfScanOriginChanged(cursor, world, player);
             scanSomeBlocks(cursor, world, player);
         }
+    }
+
+    private void cleanupOfflinePlayerCursors(MinecraftServer server) {
+        cursorCleanupTicks++;
+        if (cursorCleanupTicks < 120) {
+            return;
+        }
+        cursorCleanupTicks = 0;
+
+        Set<UUID> onlinePlayerIds = server.getPlayerManager().getPlayerList().stream()
+                .map(ServerPlayerEntity::getUuid)
+                .collect(java.util.stream.Collectors.toSet());
+        playerCursors.keySet().removeIf(uuid -> !onlinePlayerIds.contains(uuid));
     }
 
     private void resetCursorIfScanOriginChanged(PlayerScanCursor cursor, ServerWorld world, ServerPlayerEntity player) {
