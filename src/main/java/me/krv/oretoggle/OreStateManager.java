@@ -12,7 +12,7 @@ final class OreStateManager {
         return disabledOreKeys.contains(oreKey);
     }
 
-    void setDisabled(String oreKey, boolean disabled) {
+    boolean setDisabled(String oreKey, boolean disabled) {
         boolean changed;
         if (disabled) {
             changed = disabledOreKeys.add(oreKey);
@@ -23,6 +23,7 @@ final class OreStateManager {
         if (changed) {
             version++;
         }
+        return changed;
     }
 
     boolean hasDisabledOres() {

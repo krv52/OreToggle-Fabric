@@ -3,6 +3,7 @@ package me.krv.oretoggle;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
 import java.util.Locale;
@@ -12,17 +13,20 @@ final class OreToggleCommands {
     private final OreStateManager stateManager;
     private final ReplacedOreTracker replacedOreTracker;
     private final OreStorage storage;
+    private final JsonDisabledOreStorage disabledOreStorage;
 
     OreToggleCommands(
             OreDefinitions definitions,
             OreStateManager stateManager,
             ReplacedOreTracker replacedOreTracker,
-            OreStorage storage
+            OreStorage storage,
+            JsonDisabledOreStorage disabledOreStorage
     ) {
         this.definitions = definitions;
         this.stateManager = stateManager;
         this.replacedOreTracker = replacedOreTracker;
         this.storage = storage;
+        this.disabledOreStorage = disabledOreStorage;
     }
 
     void register() {
@@ -40,6 +44,10 @@ final class OreToggleCommands {
                                             return builder.buildFuture();
                                         })
                                         .executes(context -> {
+                                            if (!hasOreTogglePermission(context.getSource())) {
+                                                return 0;
+                                            }
+
                                             String oreKey = StringArgumentType.getString(context, "ore").toLowerCase(Locale.ROOT);
                                             String mode = StringArgumentType.getString(context, "mode").toLowerCase(Locale.ROOT);
                                             OreDefinition definition = definitions.get(oreKey);
@@ -61,7 +69,9 @@ final class OreToggleCommands {
                                             }
 
                                             boolean disabled = mode.equals("off");
-                                            stateManager.setDisabled(definition.key(), disabled);
+                                            if (stateManager.setDisabled(definition.key(), disabled)) {
+                                                disabledOreStorage.save(stateManager.disabledOreKeys());
+                                            }
                                             context.getSource().sendFeedback(
                                                     () -> Text.literal(messageFor(definition, disabled)),
                                                     true
@@ -77,6 +87,10 @@ final class OreToggleCommands {
                                 return builder.buildFuture();
                             })
                             .executes(context -> {
+                                if (!hasOreTogglePermission(context.getSource())) {
+                                    return 0;
+                                }
+
                                 String oreKey = StringArgumentType.getString(context, "ore").toLowerCase(Locale.ROOT);
                                 OreDefinition definition = definitions.get(oreKey);
 
@@ -102,6 +116,10 @@ final class OreToggleCommands {
             dispatcher.register(CommandManager.literal("oretoggle")
                     .then(CommandManager.literal("save")
                             .executes(context -> {
+                                if (!hasOreTogglePermission(context.getSource())) {
+                                    return 0;
+                                }
+
                                 storage.save(replacedOreTracker.snapshot());
                                 replacedOreTracker.markSaved();
                                 context.getSource().sendFeedback(
@@ -112,6 +130,10 @@ final class OreToggleCommands {
                             }))
                     .then(CommandManager.literal("status")
                             .executes(context -> {
+                                if (!hasOreTogglePermission(context.getSource())) {
+                                    return 0;
+                                }
+
                                 context.getSource().sendFeedback(
                                         () -> Text.literal(disabledOresMessage()),
                                         false
@@ -124,6 +146,17 @@ final class OreToggleCommands {
                             }))
             );
         });
+    }
+
+    private boolean hasOreTogglePermission(ServerCommandSource source) {
+        if (CommandManager.GAMEMASTERS_CHECK.allows(source.getPermissions())) {
+            return true;
+        }
+        source.sendFeedback(
+                () -> Text.literal("You do not have permission to use OreToggle commands."),
+                false
+        );
+        return false;
     }
 
     private String disabledOresMessage() {

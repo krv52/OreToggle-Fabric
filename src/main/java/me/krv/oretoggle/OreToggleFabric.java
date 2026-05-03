@@ -14,11 +14,16 @@ public class OreToggleFabric implements ModInitializer {
 		ReplacedOreTracker replacedOreTracker = new ReplacedOreTracker();
 		Path configPath = FabricLoader.getInstance().getConfigDir().resolve("oretoggle-config.json");
 		Path storagePath = FabricLoader.getInstance().getConfigDir().resolve("oretoggle-replaced-blocks.json");
+		Path disabledOrePath = FabricLoader.getInstance().getConfigDir().resolve("oretoggle-disabled-ores.json");
 		OreToggleConfig config = OreToggleConfig.load(configPath);
 		OreStorage storage = new JsonOreStorage(storagePath);
+		JsonDisabledOreStorage disabledOreStorage = new JsonDisabledOreStorage(disabledOrePath);
 
 		replacedOreTracker.load(storage.load());
-		new OreToggleCommands(definitions, stateManager, replacedOreTracker, storage).register();
+		disabledOreStorage.load().stream()
+				.filter(key -> definitions.get(key) != null)
+				.forEach(key -> stateManager.setDisabled(key, true));
+		new OreToggleCommands(definitions, stateManager, replacedOreTracker, storage, disabledOreStorage).register();
 		new OreScanPrototype(definitions, stateManager, replacedOreTracker, config).register();
 		new OreAutosave(replacedOreTracker, storage, config).register();
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
