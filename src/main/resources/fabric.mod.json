@@ -3,32 +3,22 @@
 	"id": "oretoggle-fabric",
 	"version": "${version}",
 	"name": "OreToggle Fabric",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Server-side ore availability control for Fabric servers. Disabled ores are replaced near players and can be restored later.",
 	"authors": [
-		"Me!"
+		"krv52"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/krv52/OreToggle",
+		"sources": "https://github.com/krv52/OreToggle"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/oretoggle-fabric/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
 			"me.krv.oretoggle.OreToggleFabric"
-		],
-		"client": [
-			"me.krv.oretoggle.client.OreToggleFabricClient"
 		]
 	},
-	"mixins": [
-		"oretoggle-fabric.mixins.json",
-		{
-			"config": "oretoggle-fabric.client.mixins.json",
-			"environment": "client"
-		}
-	],
 	"depends": {
 		"fabricloader": ">=0.19.2",
 		"minecraft": "~1.21.11",
