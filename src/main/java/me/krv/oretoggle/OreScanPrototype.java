@@ -144,10 +144,12 @@ final class OreScanPrototype {
             Block replacement = replacementFor(block);
             BlockState replacementState = replacement.getDefaultState();
             if (replacedOreTracker.remember(definition.key(), worldKey, pos, state, replacementState, config.maxTrackedBlocks())) {
-                world.setBlockState(pos, replacementState);
-                System.out.println("[OreToggle] Replaced disabled " + definition.displayName()
-                        + " at " + x + " " + y + " " + z + " in " + worldKey
-                        + " with " + replacement.getName().getString() + ".");
+                boolean replaced = world.setBlockState(pos, replacementState);
+                if (replaced && config.debugLogging()) {
+                    System.out.println("[OreToggle] Replaced " + state
+                            + " at " + x + " " + y + " " + z
+                            + " with " + replacementState);
+                }
             }
         }
     }

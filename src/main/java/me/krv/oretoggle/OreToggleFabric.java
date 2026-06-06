@@ -16,6 +16,7 @@ public class OreToggleFabric implements ModInitializer {
 		Path storagePath = FabricLoader.getInstance().getConfigDir().resolve("oretoggle-replaced-blocks.json");
 		Path disabledOrePath = FabricLoader.getInstance().getConfigDir().resolve("oretoggle-disabled-ores.json");
 		OreToggleConfig config = OreToggleConfig.load(configPath);
+		System.out.println("[OreToggle] debugLogging=" + config.debugLogging());
 		OreStorage storage = new JsonOreStorage(storagePath);
 		JsonDisabledOreStorage disabledOreStorage = new JsonDisabledOreStorage(disabledOrePath);
 
@@ -33,3 +34,4 @@ public class OreToggleFabric implements ModInitializer {
 		System.out.println("OreToggle Fabric loaded");
 	}
 }
+

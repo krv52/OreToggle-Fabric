@@ -56,6 +56,8 @@ final class ReplacedOreTracker {
     RestoreResult restore(String oreKey, MinecraftServer server) {
         int restored = 0;
         int skipped = 0;
+        int skippedUnloaded = 0;
+        int skippedChanged = 0;
         List<String> entriesToRemove = new ArrayList<>();
 
         for (Map.Entry<String, ReplacedOreBlock> entry : replacedBlocks.entrySet()) {
@@ -67,6 +69,7 @@ final class ReplacedOreTracker {
             ServerWorld world = worldFor(server, replacedBlock.worldKey());
             if (world == null || !world.isChunkLoaded(replacedBlock.pos().getX() >> 4, replacedBlock.pos().getZ() >> 4)) {
                 skipped++;
+                skippedUnloaded++;
                 continue;
             }
 
@@ -74,6 +77,7 @@ final class ReplacedOreTracker {
             if (!currentState.equals(replacedBlock.replacementState())) {
                 entriesToRemove.add(entry.getKey());
                 skipped++;
+                skippedChanged++;
                 continue;
             }
 
@@ -93,7 +97,7 @@ final class ReplacedOreTracker {
             dirty = true;
         }
 
-        return new RestoreResult(restored, skipped);
+        return new RestoreResult(restored, skipped, skippedUnloaded, skippedChanged);
     }
 
     private ServerWorld worldFor(MinecraftServer server, String worldKey) {

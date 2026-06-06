@@ -104,9 +104,11 @@ final class OreToggleCommands {
 
                                 RestoreResult result = replacedOreTracker.restore(definition.key(), context.getSource().getServer());
                                 context.getSource().sendFeedback(
-                                        () -> Text.literal("Restore for " + definition.displayName()
-                                                + ": restored " + result.restored()
-                                                + ", skipped " + result.skipped() + "."),
+                                        () -> Text.literal("Restore completed for " + definition.displayName() + ":\n"
+                                                + "- Restored: " + result.restored() + "\n"
+                                                + "- Skipped: " + result.skipped() + "\n"
+                                                + "  - Unloaded chunks: " + result.skippedUnloaded() + "\n"
+                                                + "  - Changed blocks: " + result.skippedChanged()),
                                         true
                                 );
                                 return result.restored();

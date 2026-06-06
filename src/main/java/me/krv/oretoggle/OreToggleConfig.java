@@ -17,6 +17,7 @@ final class OreToggleConfig {
     private int verticalScanRadius = 32;
     private int autosaveSeconds = 60;
     private int maxTrackedBlocks = 0;
+    private boolean debugLogging = false;
     private Integer scanRadiusChunks;
 
     static OreToggleConfig load(Path path) {
@@ -58,6 +59,10 @@ final class OreToggleConfig {
 
     int maxTrackedBlocks() {
         return maxTrackedBlocks;
+    }
+
+    boolean debugLogging() {
+        return debugLogging;
     }
 
     private void save(Path path) {

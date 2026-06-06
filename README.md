@@ -12,8 +12,9 @@ Disable ores while a server is running, replace matching ore blocks near players
 - Automatic replacement for disabled ores
 - Restore tracked replacements with `/restoreore <ore>`
 - Persistent replaced-block storage across restarts
+- Persistent disabled ore state across restarts
 - Autosave and manual save support
-- Configurable scan radius, scan rate, autosave interval, and tracked block limit
+- Configurable scan radius, scan rate, autosave interval, tracked block limit, and debug logging
 
 ---
 
@@ -26,12 +27,15 @@ When an ore is disabled, the server scans around each online player. Matching or
 - Netherrack (nether ores and ancient debris)
 
 Replaced blocks are tracked in `config/oretoggle-replaced-blocks.json` and can be restored later.
+Disabled ore state is stored in `config/oretoggle-disabled-ores.json`.
 
 The scanner checks closer blocks first, skips unloaded chunks, and resets its scan position when a player moves, changes world, or ore toggle state changes.
 
 ---
 
 ## Commands
+
+Commands require Minecraft permission level 2 or higher.
 
 ### Toggle ore availability
 
@@ -44,6 +48,13 @@ Supported ore keys:
 ### Restore tracked replacements
 
 `/restoreore <ore>`
+
+Restores tracked replacements for that ore and reports:
+
+- Restored blocks
+- Skipped blocks
+- Skipped because the world or chunk is not loaded
+- Skipped because the block no longer matches the expected replacement
 
 ### Status
 
@@ -61,6 +72,10 @@ Config file:
 
 `config/oretoggle-config.json`
 
+In the development run directory this is usually:
+
+`run/config/oretoggle-config.json`
+
 Default values:
 
 ```json
@@ -69,7 +84,8 @@ Default values:
   "horizontalScanRadius": 64,
   "verticalScanRadius": 32,
   "autosaveSeconds": 60,
-  "maxTrackedBlocks": 0
+  "maxTrackedBlocks": 0,
+  "debugLogging": false
 }
 ```
 
@@ -78,6 +94,7 @@ Default values:
 - `verticalScanRadius`: vertical block radius above and below each player
 - `autosaveSeconds`: autosave interval for replaced-block storage
 - `maxTrackedBlocks`: maximum number of stored replacements (`0` = unlimited)
+- `debugLogging`: when `false` no per-block replacement spam is printed; when `true` each successful replacement logs the old and new block state
 
 The mod creates the config file on first run. Older configs using `scanRadiusChunks` are migrated by converting chunks to blocks when `horizontalScanRadius` is missing or invalid.
 
